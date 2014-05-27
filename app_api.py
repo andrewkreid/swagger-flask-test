@@ -5,15 +5,21 @@ Sample REST API for testing Swagger integration.
 """
 
 from flask import Flask, jsonify, abort, request, make_response, url_for
-from flask.ext import restful
+from flask_restful import Api, Resource, reqparse
 from application_mock import get_applications, get_application, put_application, delete_application, create_application
+import json
 
 app = Flask(__name__)
-api = restful.Api(app)
+api = Api(app)
 
 
-class ApplicationListAPI(restful.Resource):
+class ApplicationListAPI(Resource):
     """ API implementation for listing Applications and creating new ones"""
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('application', type=str, required='true', help='Need Application JSON')
+
 
     def get(self):
         status, applications = get_applications()
@@ -23,10 +29,16 @@ class ApplicationListAPI(restful.Resource):
             return applications
 
     def post(self):
-        pass
+
+        args = self.reqparse.parse_args()
+        status, application = create_application(json.loads(args['application']))
+        if status != 200:
+            abort(status)
+        else:
+            return application
 
 
-class ApplicationAPI(restful.Resource):
+class ApplicationAPI(Resource):
     """API Implementation for the Application Resource"""
 
     def get(self, app_id):
