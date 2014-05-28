@@ -20,8 +20,8 @@ class ApplicationListAPI(Resource):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('application', type=str, required='true', help='Need Application JSON')
 
-
-    def get(self):
+    @staticmethod
+    def get():
         status, applications = get_applications()
         if status != 200:
             abort(status)
@@ -41,14 +41,29 @@ class ApplicationListAPI(Resource):
 class ApplicationAPI(Resource):
     """API Implementation for the Application Resource"""
 
-    def get(self, app_id):
-        pass
+    @staticmethod
+    def get(app_id):
+        status, application = get_application(app_id)
+        if status != 200:
+            abort(status)
+        else:
+            return application
 
-    def put(self, app_id):
-        pass
+    @staticmethod
+    def put(app_id):
+        new_app = request.json
+        status, application = put_application(app_id, new_app)
+        if status != 200:
+            abort(status)
+        return application
 
-    def delete(self, app_id):
-        pass
+    @staticmethod
+    def delete(app_id):
+        status, message = delete_application(app_id)
+        if status != 200:
+            abort(status)
+        return message
+
 
 api.add_resource(ApplicationListAPI, '/ums/v1/applications')
 api.add_resource(ApplicationAPI, '/ums/v1/applications/<int:app_id>')

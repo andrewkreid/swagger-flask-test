@@ -35,18 +35,24 @@ def get_application(app_id):
         return 404, "Application Not Found"
 
 
-def put_application(app):
+def put_application(app_id, app):
     global application_map
-    if "id" not in app:
-        raise ValueError("Application does not have an ID field")
 
-    app_id = app["id"]
+    if app is None or (app is not None and len(app) < 1):
+        return 400, "No application"
+    if "id" in app and app["id"] != app_id:
+        return 400, "ID Mismatch"
     if app_id not in application_map:
         # No such Application
         return 404, "Applcation not found."
 
-    application_map[app_id]["name"] = app["name"]
-    application_map[app_id]["password"] = app["password"]
+    if "name" in app:
+        application_map[app_id]["name"] = app["name"]
+    if "password" in app:
+        if len(app["password"]) == 0:
+            application_map[app_id]["password"] = random_password()
+        else:
+            application_map[app_id]["password"] = app["password"]
     return 200, application_map[app_id]
 
 
