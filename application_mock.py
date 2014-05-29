@@ -4,7 +4,7 @@
 Mock data store for Application objects. An Application Object looks like:
 
 {
-  "id" : int,
+  "app_id" : int,
   "name" : string,
   "password" : string
 }
@@ -24,7 +24,7 @@ def random_password():
 
 def get_applications():
     global application_map
-    return 200, sorted(application_map.values(), key=lambda x: x["id"])
+    return 200, sorted(application_map.values(), key=lambda x: x["app_id"])
 
 
 def get_application(app_id):
@@ -40,7 +40,7 @@ def put_application(app_id, app):
 
     if app is None or (app is not None and len(app) < 1):
         return 400, "No application"
-    if "id" in app and app["id"] != app_id:
+    if "app_id" in app and app["app_id"] != app_id:
         return 400, "ID Mismatch"
     if app_id not in application_map:
         # No such Application
@@ -67,14 +67,14 @@ def create_application(app):
     global application_map
     global app_id_counter
 
-    new_app = {"id": app_id_counter}
+    new_app = {"app_id": app_id_counter}
     app_id_counter += 1
     new_app["name"] = app["name"]
     if "password" in app and len(app["password"]) > 0:
         new_app["password"] = app["password"]
     else:
         new_app["password"] = random_password()
-    application_map[new_app["id"]] = new_app
+    application_map[new_app["app_id"]] = new_app
 
     return 200, new_app
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     print get_application(1)
     print get_application(666)
 
-    print put_application({"id": 2, "name": "app2", "password": "fungus"})
+    print put_application({"app_id": 2, "name": "app2", "password": "fungus"})
     print get_applications()
 
     print delete_application(1)
