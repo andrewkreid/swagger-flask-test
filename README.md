@@ -10,7 +10,7 @@ Prerequisites
 -------------
 
 At the time of writing, you had to use the following fork of flask-restful-swagger, as it contains a
-newer version of swagger-ui that fixes a bug that prevented you posting JSON:
+newer version of swagger-ui that fixes a bug that prevented you POSTing JSON with the right Content-Type:
 
 - [https://github.com/richtera/flask-restful-swagger](https://github.com/richtera/flask-restful-swagger)
 
@@ -18,7 +18,16 @@ Calling The API with curl
 -------------------------
 
 ```bash
-curl -v -X POST --data 'application={"name": "foo"}'  http://localhost:5000/ums/v1/applications
+# Getting a list of Applications
+curl http://localhost:5000/ums/v1/applications
+
+# Getting an Application by ID
+curl http://localhost:5000/ums/v1/applications/1
+
+# Adding a new Application
+curl -X POST --data 'application={"name": "foo"}'  http://localhost:5000/ums/v1/applications
+
+# Modifying an existing Application
 curl -X PUT --data '{"name": "Changed Name", "password":""}' --header "Content-Type:application/json" http://localhost:5000/ums/v1/applications/1
 ```
 

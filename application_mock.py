@@ -59,7 +59,7 @@ def put_application(app_id, app):
 def delete_application(app_id):
     if app_id in application_map:
         del application_map[app_id]
-        return 200, "DELETED"
+        return 200, {"status": 200, "message": "deleted"}
     return 404, "Not Found"
 
 

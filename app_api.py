@@ -27,6 +27,7 @@ api = swagger.docs(Api(app),
 parser = reqparse.RequestParser()
 parser.add_argument('Application')
 
+
 @swagger.model
 class ApplicationModel:
     """An Application """
@@ -55,7 +56,6 @@ class ApplicationListAPI(Resource):
         pass
 
     @swagger.operation(
-        notes="Get a list of Applications",
         summary="Get a list of Applications",
         responseClass=ApplicationListModel.__name__,
         nickname="getApplicationList"
@@ -68,11 +68,20 @@ class ApplicationListAPI(Resource):
             return {"applications": applications}, 200, {'Access-Control-Allow-Origin': '*'}
 
     @swagger.operation(
-        notes="Create a new Application resource",
+        notes=
+        """
+        Create a new Application resource by POST'ing Application JSON. <br><br>
+        You MUST NOT include the app_id parameter (it will be assigned by the server).
+        <pre>
+        some preformatted text
+        </pre>
+
+        """,
+        summary="Create a new application",
         responseClass=ApplicationModel.__name__,
         nickname="create",
         consumes=[
-            "application/json",
+            "application/json"
         ],
         parameters=[
             {
@@ -110,9 +119,9 @@ class ApplicationAPI(Resource):
 
     @swagger.operation(
         notes="Get an Application by ID",
+        summary="Get a single Application by ID",
         nickname="get",
         responseClass=ApplicationModel.__name__,
-        parameters=[],
         responseMessages=[
             {
                 "code": 404,
@@ -128,6 +137,20 @@ class ApplicationAPI(Resource):
         else:
             return application
 
+    @swagger.operation(
+        summary="Modify an existing Application",
+        nickname="modifyApplication",
+        parameters=[
+            {
+                "name": "body",
+                "description": "Application m",
+                "dataType": ApplicationModel.__name__,
+                "required": True,
+                "allowMultiple": False,
+                "paramType": "body",
+            }
+        ]
+    )
     def put(self, app_id):
         new_app = request.json
         status, application = put_application(app_id, new_app)
@@ -135,7 +158,18 @@ class ApplicationAPI(Resource):
             abort(status)
         return application
 
+    @swagger.operation(
+        method="DELETE",
+        summary="Delete an Application by ID",
+        responseMessages=[
+            {
+                "code": 404,
+                "message": "Application Not Found"
+            }
+        ]
+    )
     def delete(self, app_id):
+        logging.error("DELETE %d" % app_id)
         status, message = delete_application(app_id)
         if status != 200:
             abort(status)
