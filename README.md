@@ -14,6 +14,29 @@ newer version of swagger-ui that fixes a bug that prevented you POSTing JSON wit
 
 - [https://github.com/richtera/flask-restful-swagger](https://github.com/richtera/flask-restful-swagger)
 
+Quick Build'n'Run Instructions
+------------------------------
+
+```bash
+sudo pip install flask-restful
+
+# Install a fork of flask-restful-swagger that fixes some important bugs
+git clone https://github.com/richtera/flask-restful-swagger.git
+cd flask-restful-swagger
+python ./setup.py build
+sudo python ./setup.py install
+
+# Check out and run the test
+cd ..
+git clone git@github.com:andrewkreid/swagger-flask-test.git
+cd swagger-flask-test
+python ./app_api.py
+
+```
+
+You should now be able to browse to http://localhost:5000/api/spec.html
+
+
 Calling The API with curl
 -------------------------
 

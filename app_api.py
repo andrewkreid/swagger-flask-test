@@ -4,28 +4,50 @@
 Sample REST API for testing Swagger integration.
 """
 
-from flask import Flask, jsonify, abort, request, make_response, url_for
-from flask_restful import Api, Resource, reqparse, fields, marshal_with
+from flask import Flask, abort, request
+from flask_restful import Api, Resource, fields, marshal_with
 from application_mock import get_applications, get_application, put_application, delete_application, create_application
-import json
 from flask_restful_swagger import swagger
 import logging
-
-# Logging setup to temp file
-#logging.basicConfig(filename="/tmp/app_api.log", format="%(asctime)s %(levelname)s:%(message)s", level=logging.DEBUG)
+import socket
 
 app = Flask(__name__)
 
 # Wrap the Api with swagger.docs. It is a thin wrapper around the Api class that adds some swagger smarts
 api = swagger.docs(Api(app),
                    produces=["application/json"],
-                   basePath="http://localhost:5000",
+                   basePath="http://%s:5000" % socket.getfqdn(),
                    resourcePath="/",
-                   apiVersion='0.1',
+                   apiVersion='0.9',
                    api_spec_url="/api/spec")
 
-parser = reqparse.RequestParser()
-parser.add_argument('Application')
+
+@swagger.model
+class Link:
+    """Model for Links provided in the API"""
+    resource_fields = {
+        "href": fields.Url,       # Currently no way to set a description on mode fields :(
+        "type": fields.String,
+        "method": fields.String,
+        "rel": fields.String,
+        "title": fields.String
+    }
+
+
+@swagger.model
+@swagger.nested(
+    next_results=Link.__name__,
+    previous_results=Link.__name__
+)
+class PaginationInfo:
+    """Model for pagination of results"""
+    resource_fields = {
+        "next_results": fields.Nested(Link.resource_fields),
+        "previous_results": fields.Nested(Link.resource_fields),
+        "count": fields.Integer,
+        "number_of_results": fields.Integer,
+        "offset": fields.Integer
+    }
 
 
 @swagger.model
@@ -40,12 +62,14 @@ class ApplicationModel:
 
 @swagger.model
 @swagger.nested(
-    applications=ApplicationModel.__name__
+    applications=ApplicationModel.__name__,
+    pagination=PaginationInfo.__name__
 )
 class ApplicationListModel:
     """A List Of Applications"""
     resource_fields = {
-        'applications': fields.List(fields.Nested(ApplicationModel.resource_fields))
+        'applications': fields.List(fields.Nested(ApplicationModel.resource_fields)),
+        'pagination': fields.Nested(PaginationInfo.resource_fields)
     }
 
 
@@ -65,7 +89,15 @@ class ApplicationListAPI(Resource):
         if status != 200:
             abort(status)
         else:
-            return {"applications": applications}, 200, {'Access-Control-Allow-Origin': '*'}
+            pagination_fragment = {
+                "count": len(applications),
+                "next_results": "",
+                "previous_results": "",
+                "number_of_results": len(applications),
+                "offset": 0
+            }
+            return {"applications": applications, "pagination": pagination_fragment}, 200, {
+                'Access-Control-Allow-Origin': '*'}
 
     @swagger.operation(
         notes=
